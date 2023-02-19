@@ -81,13 +81,26 @@ const UpsSelector = () => {
           (requestState.outletSchuko && configRow.outlet === "schuko") ||
           (requestState.outletIECC13 && configRow.outlet === "iec") ||
           (requestState.outletHW && configRow.outlet === "hardwire");
+        const rackOk =
+          (requestState.rackMount == false && configRow.mount === "tower") ||
+          configRow.mount === "convertible" ||
+          (requestState.rackMount == true && configRow.mount === "rack");
 
         if (
           time >= requestState.batteryRuntime &&
           lastUps !== configRow.ups &&
           phaseOk &&
-          outletOk
+          outletOk &&
+          rackOk
         ) {
+          const railKitPrice =
+            configRow.rail_kit1_q > 0 && requestState.rackMount
+              ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
+              : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
+              ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
+              : 0;
+          // console.log("railKitPrice", railKitPrice);
+
           selectedData.push({
             key: configRow.config,
             // config: displayConfig,
@@ -97,11 +110,27 @@ const UpsSelector = () => {
             batteryPartNumber: configRow.battery,
             batteryDescription: tariffConstObj[configRow.battery]?.description,
             batteryQuantity: configRow.battery_quantity,
+            railKit1: configRow.rail_kit1,
+            railKit1Description: tariffConstObj[configRow.rail_kit1]?.description,
+            railKit1_q: requestState.rackMount
+              ? configRow.rail_kit1 !== configRow.rail_kit2
+                ? +configRow.rail_kit1_q
+                : +configRow.rail_kit1_q + +configRow.rail_kit2_q
+              : 0,
+            railKit2: configRow.rail_kit2,
+            railKit2_q: requestState.rackMount
+              ? configRow.rail_kit1 !== configRow.rail_kit2
+                ? +configRow.rail_kit2_q
+                : 0
+              : 0,
+            railKit2Description: tariffConstObj[configRow.rail_kit2]?.description,
             price:
               configRow.battery_quantity > 0
                 ? +tariffConstObj[configRow.ups]?.price +
-                  +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price
-                : +tariffConstObj[configRow.ups]?.price,
+                  +configRow.battery_quantity *
+                    +tariffConstObj[configRow.battery]?.price +
+                  railKitPrice
+                : +tariffConstObj[configRow.ups]?.price + railKitPrice,
             href: configRow.href,
             powerReserve: Math.round(
               (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
@@ -110,7 +139,7 @@ const UpsSelector = () => {
           lastUps = configRow.ups;
         }
       }
-      console.log("configRow-selectedData", selectedData);
+      // console.log("configRow-selectedData", selectedData);
       selectedData.sort((a, b) => a[sort] - b[sort]);
       console.log("configRow-selectedData", selectedData);
       return selectedData;
@@ -136,14 +165,36 @@ const UpsSelector = () => {
             <strong>{selectData[index].upsPartNumber}</strong>{" "}
           </Link>
           <Text>{selectData[index].upsDescription}</Text>
-          <br />
           {selectData[index].batteryQuantity > 0 && (
             <>
+              <br />
               <Text>
                 {selectData[index].batteryQuantity}
                 {"x "}
                 <strong>{selectData[index].batteryPartNumber}</strong>{" "}
                 {selectData[index].batteryDescription}
+              </Text>
+            </>
+          )}
+          {selectData[index].railKit1_q > 0 && (
+            <>
+              <br />
+              <Text>
+                {selectData[index].railKit1_q}
+                {"x "}
+                <strong>{selectData[index].railKit1}</strong>{" "}
+                {selectData[index].railKit1Description}
+              </Text>
+            </>
+          )}
+          {selectData[index].railKit2_q > 0 && (
+            <>
+              <br />
+              <Text>
+                {selectData[index].railKit2_q}
+                {"x "}
+                <strong>{selectData[index].railKit2}</strong>{" "}
+                {selectData[index].railKit2Description}
               </Text>
             </>
           )}
