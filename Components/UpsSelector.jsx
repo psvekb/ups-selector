@@ -15,8 +15,9 @@ import {
 } from "antd";
 import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeConst";
+import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
 
 const UpsSelector = () => {
   console.log("UpsSelector");
@@ -64,9 +65,11 @@ const UpsSelector = () => {
       if (time >= requestState.batteryRuntime && lastUps !== conf.ups) {
         const displayConfig =
           conf.battery_quantity > 0
-            ? `${conf.ups} + ${conf.battery_quantity} x ${conf.battery}`
-            : `${conf.ups}`;
-        selectedData.push({ key: conf.conig, config: displayConfig, time });
+            ? `1\t${conf.ups}\t${tariffConstObj[conf.ups]?.description}\n${
+                conf.battery_quantity
+              }\t${conf.battery}\t${tariffConstObj[conf.battery]?.description}`
+            : `1\t${conf.ups}\t${tariffConstObj[conf.ups]?.description}`;
+        selectedData.push({ key: conf.config, config: displayConfig, time });
         lastUps = conf.ups;
       }
       // console.log("conf-time", conf.config, time);
@@ -80,7 +83,12 @@ const UpsSelector = () => {
       title: "Конфигурация",
       key: "config",
       dataIndex: "config",
-      width: "25%",
+      width: "50%",
+      render: (text) => (
+        <Input.TextArea readOnly value={text}>
+          {text}
+        </Input.TextArea>
+      ),
     },
     {
       title: "Расчетное время(мин)",
