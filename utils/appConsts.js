@@ -22,3 +22,8 @@ export function objectFromCSV(csvConst, first_column) {
 export function roundUp(number) {
   return Math.ceil(number);
 }
+
+export function strUSD(number) {
+  number = number || 0;
+  return `${(+(+number).toFixed(2)).toLocaleString()}`;
+}

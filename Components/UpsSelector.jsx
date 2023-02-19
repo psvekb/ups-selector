@@ -16,6 +16,7 @@ import {
 import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeConst";
 import { tariffConstObj } from "@/utils/upsselector/tariffConst";
+import { strUSD } from "@/utils/appConsts";
 
 const { Paragraph, Text, Link } = Typography;
 
@@ -64,27 +65,30 @@ const UpsSelector = () => {
       });
 
       if (time >= requestState.batteryRuntime && lastUps !== configRow.ups) {
-        const displayConfig =
-          configRow.battery_quantity > 0
-            ? `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}\n${
-                configRow.battery_quantity
-              }\t${configRow.battery}\t${tariffConstObj[configRow.battery]?.description}`
-            : `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}`;
+        // const displayConfig =
+        //   configRow.battery_quantity > 0
+        //     ? `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}\n${
+        //         configRow.battery_quantity
+        //       }\t${configRow.battery}\t${tariffConstObj[configRow.battery]?.description}`
+        //     : `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}`;
         selectedData.push({
           key: configRow.config,
-          config: displayConfig,
+          // config: displayConfig,
           time,
           upsPartNumber: configRow.ups,
           upsDescription: tariffConstObj[configRow.ups]?.description,
           batteryPartNumber: configRow.battery,
           batteryDescription: tariffConstObj[configRow.battery]?.description,
           batteryQuantity: configRow.battery_quantity,
+          tariff:
+            +tariffConstObj[configRow.ups]?.price +
+            +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price,
           href: configRow.href,
         });
         lastUps = configRow.ups;
       }
-      // console.log("configRow-time", configRow.config, time);
     }
+    console.log("configRow-selectedData", selectedData);
     setSelectData(selectedData);
     setFinish(true);
   }
@@ -116,10 +120,17 @@ const UpsSelector = () => {
       ),
     },
     {
-      title: "Расчетное время(мин)",
+      title: "Расчетное время (мин)",
       key: "time",
       dataIndex: "time",
       width: "5%",
+    },
+    {
+      title: "Цена Тариф, руб (с НДС)",
+      key: "tariff",
+      dataIndex: "tariff",
+      width: "5%",
+      render: (text, record, index) => <>{strUSD(text)}</>,
     },
   ];
 
