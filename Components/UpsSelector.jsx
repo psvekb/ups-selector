@@ -78,7 +78,7 @@ const UpsSelector = () => {
         const outletOk =
           (requestState.outletSchuko && configRow.outlet === "schuko") ||
           (requestState.outletIECC13 && configRow.outlet === "iec") ||
-          (requestState.outletHW && configRow.outlet === "hw");
+          (requestState.outletHW && configRow.outlet === "hardwire");
 
         if (
           time >= requestState.batteryRuntime &&
