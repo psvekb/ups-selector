@@ -17,7 +17,7 @@ import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeConst";
 import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 
-const { Paragraph, Text } = Typography;
+const { Paragraph, Text, Link } = Typography;
 
 const UpsSelector = () => {
   console.log("UpsSelector");
@@ -35,7 +35,8 @@ const UpsSelector = () => {
       ...requestState,
       [name]: value,
     });
-    setFinish(false);
+    // setFinish(false);
+    onFinishClick();
   };
 
   function calculateRunTime({ power, runtime, fullUpsPower, kx, px }) {
@@ -52,27 +53,37 @@ const UpsSelector = () => {
     const selectedData = [];
     let lastUps = "";
     for (let i = 1; i < runtimeConstArr.length - 1; i++) {
-      const conf = runtimeConstObj[runtimeConstArr[i][0]];
+      const configRow = runtimeConstObj[runtimeConstArr[i][0]];
       // console.log('time', )
       const time = calculateRunTime({
         power: requestState.upsSystemFullPower,
         runtime: requestState.batteryRuntime,
-        fullUpsPower: conf.full_ups_power,
-        kx: conf.kx,
-        px: conf.px,
+        fullUpsPower: configRow.full_ups_power,
+        kx: configRow.kx,
+        px: configRow.px,
       });
 
-      if (time >= requestState.batteryRuntime && lastUps !== conf.ups) {
+      if (time >= requestState.batteryRuntime && lastUps !== configRow.ups) {
         const displayConfig =
-          conf.battery_quantity > 0
-            ? `1\t${conf.ups}\t${tariffConstObj[conf.ups]?.description}\n${
-                conf.battery_quantity
-              }\t${conf.battery}\t${tariffConstObj[conf.battery]?.description}`
-            : `1\t${conf.ups}\t${tariffConstObj[conf.ups]?.description}`;
-        selectedData.push({ key: conf.config, config: displayConfig, time });
-        lastUps = conf.ups;
+          configRow.battery_quantity > 0
+            ? `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}\n${
+                configRow.battery_quantity
+              }\t${configRow.battery}\t${tariffConstObj[configRow.battery]?.description}`
+            : `1\t${configRow.ups}\t${tariffConstObj[configRow.ups]?.description}`;
+        selectedData.push({
+          key: configRow.config,
+          config: displayConfig,
+          time,
+          upsPartNumber: configRow.ups,
+          upsDescription: tariffConstObj[configRow.ups]?.description,
+          batteryPartNumber: configRow.battery,
+          batteryDescription: tariffConstObj[configRow.battery]?.description,
+          batteryQuantity: configRow.battery_quantity,
+          href: configRow.href,
+        });
+        lastUps = configRow.ups;
       }
-      // console.log("conf-time", conf.config, time);
+      // console.log("configRow-time", configRow.config, time);
     }
     setSelectData(selectedData);
     setFinish(true);
@@ -84,26 +95,40 @@ const UpsSelector = () => {
       key: "config",
       dataIndex: "config",
       width: "50%",
-      render: (text) => (
-        <Input.TextArea readOnly value={text}>
-          {text}
-        </Input.TextArea>
+      render: (text, record, index) => (
+        <>
+          <Link href={selectData[index].href} target="_blank">
+            <strong>{selectData[index].upsPartNumber}</strong>{" "}
+          </Link>
+          <Text>{selectData[index].upsDescription}</Text>
+          <br />
+          {selectData[index].batteryQuantity > 0 && (
+            <>
+              <Text>
+                {selectData[index].batteryQuantity}
+                {"x "}
+                <strong>{selectData[index].batteryPartNumber}</strong>{" "}
+                {selectData[index].batteryDescription}
+              </Text>
+            </>
+          )}
+        </>
       ),
     },
     {
       title: "Расчетное время(мин)",
       key: "time",
       dataIndex: "time",
-      width: "25%",
+      width: "5%",
     },
   ];
 
   return (
     <>
       <Card>
-        <Typography.Title level={3}>Выбор ИБП </Typography.Title>
+        <Typography.Title level={3}>Выбор ИБП по мощности нагрузки</Typography.Title>
         <Form.Item>
-          <label>Задайте мощность нагрузки (Вт) </label>
+          <label>Задайте мощность нагрузки 0 - 80 000(Вт) </label>
           <InputNumber
             min={1}
             // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
