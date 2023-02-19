@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Table,
+  Checkbox,
   // Text,
 } from "antd";
 import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
@@ -25,6 +26,7 @@ const UpsSelector = () => {
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: 500,
     batteryRuntime: 5,
+    phase: "1-1",
   });
   const [finish, setFinish] = useState(false);
   const [selectData, setSelectData] = useState([]);
@@ -81,14 +83,16 @@ const UpsSelector = () => {
           batteryDescription: tariffConstObj[configRow.battery]?.description,
           batteryQuantity: configRow.battery_quantity,
           tariff:
-            +tariffConstObj[configRow.ups]?.price +
-            +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price,
+            configRow.battery_quantity > 0
+              ? +tariffConstObj[configRow.ups]?.price +
+                +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price
+              : +tariffConstObj[configRow.ups]?.price,
           href: configRow.href,
         });
         lastUps = configRow.ups;
       }
     }
-    console.log("configRow-selectedData", selectedData);
+    // console.log("configRow-selectedData", selectedData);
     setSelectData(selectedData);
     setFinish(true);
   }
@@ -164,11 +168,22 @@ const UpsSelector = () => {
             <ArrowRightOutlined />
             Подобрать ИБП
           </Button>
+          {/* <Radio>Ds,thbnt </Radio> */}
         </Form.Item>
       </Card>
       {finish && (
         <Card>
           <>
+            <Typography.Title level={3}>Опции </Typography.Title>
+            <Text>Фазы вход-выход</Text>
+            <Checkbox>1-1</Checkbox>
+            <Checkbox>3-1</Checkbox>
+            <Checkbox>3-3</Checkbox>
+            <br />
+            <Text>Тип выходных розеток</Text>
+            <Checkbox>Schuko (Евро-розетки)</Checkbox>
+            <Checkbox>IEC C13/C19</Checkbox>
+            <Checkbox>Клеммный выход</Checkbox>
             <Typography.Title level={3}>Предлагаемые конфгурации</Typography.Title>
             <Table
               dataSource={selectData}
