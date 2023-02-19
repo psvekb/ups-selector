@@ -32,9 +32,11 @@ const UpsSelector = () => {
     outletSchuko: true,
     outletIECC13: true,
     outletHW: true,
+    rackMount: false,
   });
   const [finish, setFinish] = useState(false);
   const [selectData, setSelectData] = useState([]);
+  const [sort, setSort] = useState("price");
 
   const updateInput = (value, name) => {
     console.log("updateInput - value, name", value, name);
@@ -95,67 +97,30 @@ const UpsSelector = () => {
             batteryPartNumber: configRow.battery,
             batteryDescription: tariffConstObj[configRow.battery]?.description,
             batteryQuantity: configRow.battery_quantity,
-            tariff:
+            price:
               configRow.battery_quantity > 0
                 ? +tariffConstObj[configRow.ups]?.price +
                   +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price
                 : +tariffConstObj[configRow.ups]?.price,
             href: configRow.href,
+            powerReserve: Math.round(
+              (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
+            ),
           });
           lastUps = configRow.ups;
         }
       }
-      // console.log("configRow-selectedData", selectedData);
-      setSelectData(selectedData);
+      console.log("configRow-selectedData", selectedData);
+      selectedData.sort((a, b) => a[sort] - b[sort]);
+      console.log("configRow-selectedData", selectedData);
+      return selectedData;
+      // setSelectData(selectedData);
     }
-    getSelectTable();
-  }, [finish, requestState]);
+    setSelectData(getSelectTable());
+  }, [finish, requestState, sort]);
 
   function onFinishClick() {
     console.log("finish");
-    // console.log("runtimeConstArr", runtimeConstArr);
-    // console.log("runtimeConstObj", runtimeConstObj);
-    // const selectedData = [];
-    // let lastUps = "";
-    // for (let i = 1; i < runtimeConstArr.length - 1; i++) {
-    //   const configRow = runtimeConstObj[runtimeConstArr[i][0]];
-    //   // console.log("configRow", configRow);
-    //   // console.log("requestState.phase11", requestState.phase11);
-    //   // console.log("requestState.phase31", requestState.phase31);
-    //   const time = calculateRunTime({
-    //     power: requestState.upsSystemFullPower,
-    //     runtime: requestState.batteryRuntime,
-    //     fullUpsPower: configRow.full_ups_power,
-    //     kx: configRow.kx,
-    //     px: configRow.px,
-    //   });
-
-    //   const phaseOk =
-    //     (requestState.phase11 && configRow.phase === "1-1") ||
-    //     (requestState.phase31 && configRow.phase === "3-1");
-
-    //   if (time >= requestState.batteryRuntime && lastUps !== configRow.ups && phaseOk) {
-    //     selectedData.push({
-    //       key: configRow.config,
-    //       // config: displayConfig,
-    //       time,
-    //       upsPartNumber: configRow.ups,
-    //       upsDescription: tariffConstObj[configRow.ups]?.description,
-    //       batteryPartNumber: configRow.battery,
-    //       batteryDescription: tariffConstObj[configRow.battery]?.description,
-    //       batteryQuantity: configRow.battery_quantity,
-    //       tariff:
-    //         configRow.battery_quantity > 0
-    //           ? +tariffConstObj[configRow.ups]?.price +
-    //             +configRow.battery_quantity * +tariffConstObj[configRow.battery]?.price
-    //           : +tariffConstObj[configRow.ups]?.price,
-    //       href: configRow.href,
-    //     });
-    //     lastUps = configRow.ups;
-    //   }
-    // }
-    // // console.log("configRow-selectedData", selectedData);
-    // setSelectData(selectedData);
     setFinish(true);
   }
 
@@ -192,9 +157,15 @@ const UpsSelector = () => {
       width: "5%",
     },
     {
+      title: "Резерв по мощности %",
+      key: "powerReserve",
+      dataIndex: "powerReserve",
+      width: "5%",
+    },
+    {
       title: "Цена Тариф, руб (с НДС)",
-      key: "tariff",
-      dataIndex: "tariff",
+      key: "price",
+      dataIndex: "price",
       width: "5%",
       render: (text, record, index) => <>{strUSD(text)}</>,
     },
@@ -274,13 +245,29 @@ const UpsSelector = () => {
             >
               Клеммный выход
             </Checkbox>
+            <br />
+            <Text>Установка в стойку 19`` </Text>
+            <Checkbox
+              checked={requestState.rackMount}
+              onChange={(e) => updateInput(e.target.checked, "rackMount")}
+            >
+              {requestState.rackMount ? "да" : "нет"}
+            </Checkbox>
+            <br />
+            <Text>Сортировать </Text>
+            <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
+              <Radio value="price">По цене </Radio>
+              <Radio value="powerReserve">По резерву мощности </Radio>
+            </Radio.Group>
           </>
         )}
       </Card>
       {finish && (
         <Card>
           <>
-            <Typography.Title level={3}>Предлагаемые конфгурации</Typography.Title>
+            <Typography.Title level={3}>
+              Предлагаемые конфгурации ИБП и дополнительных батарей
+            </Typography.Title>
             <Table
               dataSource={selectData}
               columns={selectDataColumns}
