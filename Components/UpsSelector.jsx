@@ -230,7 +230,10 @@ const UpsSelector = () => {
   return (
     <>
       <Card>
-        <Typography.Title level={3}>Выбор ИБП по мощности нагрузки</Typography.Title>
+        <Typography.Title level={2}>Systeme Electric</Typography.Title>
+        <Typography.Title level={3}>
+          Выбор 1-фазных и 3-фазных ИБП по мощности нагрузки
+        </Typography.Title>
         <Form.Item>
           <label>Задайте мощность нагрузки 0 - 80 000(Вт) </label>
           <InputNumber
