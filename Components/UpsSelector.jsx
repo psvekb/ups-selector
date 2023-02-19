@@ -33,6 +33,7 @@ const UpsSelector = () => {
     outletIECC13: true,
     outletHW: true,
     rackMount: false,
+    snmpCard: false,
   });
   const [finish, setFinish] = useState(false);
   const [selectData, setSelectData] = useState([]);
@@ -85,6 +86,9 @@ const UpsSelector = () => {
           (requestState.rackMount == false && configRow.mount === "tower") ||
           configRow.mount === "convertible" ||
           (requestState.rackMount == true && configRow.mount === "rack");
+        // const snmpPreInstalledOk =
+        //   (requestState.snmpCard && configRow.card_snmp_installed === "1") ||
+        //   (!requestState.snmpCard && configRow.card_snmp_installed === "0");
 
         if (
           time >= requestState.batteryRuntime &&
@@ -92,6 +96,7 @@ const UpsSelector = () => {
           phaseOk &&
           outletOk &&
           rackOk
+          // snmpPreInstalledOk
         ) {
           const railKitPrice =
             configRow.rail_kit1_q > 0 && requestState.rackMount
@@ -141,7 +146,7 @@ const UpsSelector = () => {
       }
       // console.log("configRow-selectedData", selectedData);
       selectedData.sort((a, b) => a[sort] - b[sort]);
-      console.log("configRow-selectedData", selectedData);
+      // console.log("configRow-selectedData", selectedData);
       return selectedData;
       // setSelectData(selectedData);
     }
@@ -304,6 +309,14 @@ const UpsSelector = () => {
             >
               {requestState.rackMount ? "да" : "нет"}
             </Checkbox>
+            {/* <br />
+            <Text>Карта управления SNMP добавить </Text>
+            <Checkbox
+              checked={requestState.snmpCard}
+              onChange={(e) => updateInput(e.target.checked, "snmpCard")}
+            >
+              {requestState.snmpCard ? "да" : "нет"}
+            </Checkbox> */}
             <br />
             <Text>Сортировать </Text>
             <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
