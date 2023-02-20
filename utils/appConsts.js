@@ -25,5 +25,5 @@ export function roundUp(number) {
 
 export function strUSD(number) {
   number = number || 0;
-  return `${(+(+number).toFixed(2)).toLocaleString()}`;
+  return `${(+(+number).toFixed(2)).toLocaleString("ru")}`;
 }

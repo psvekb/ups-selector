@@ -98,37 +98,57 @@ const UpsSelector = () => {
           rackOk
           // snmpPreInstalledOk
         ) {
+          // console.log("configRow", configRow);
           const railKitPrice =
             configRow.rail_kit1_q > 0 && requestState.rackMount
               ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
               : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
               ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
               : 0;
-          // console.log("railKitPrice", railKitPrice);
-
+          const configSource = [
+            {
+              partNumber: (
+                <Link href={configRow.href} target="_blank">
+                  <strong>{configRow.ups}</strong>{" "}
+                </Link>
+              ),
+              description: tariffConstObj[configRow.ups]?.description,
+              quantity: 1,
+            },
+          ];
+          if (configRow.battery_quantity > 0) {
+            configSource.push({
+              partNumber: configRow.battery,
+              description: tariffConstObj[configRow.battery]?.description,
+              quantity: configRow.battery_quantity,
+            });
+          }
+          if (requestState.rackMount) {
+            let railKit1_q = +configRow.rail_kit1_q;
+            let railKit2_q = +configRow.rail_kit2_q;
+            if (configRow.rail_kit1 === configRow.rail_kit2) {
+              railKit1_q += railKit2_q;
+              railKit2_q = 0;
+            }
+            if (railKit1_q > 0) {
+              configSource.push({
+                partNumber: configRow.rail_kit1,
+                description: tariffConstObj[configRow.rail_kit1]?.description,
+                quantity: railKit1_q,
+              });
+            }
+            if (railKit2_q > 0) {
+              configSource.push({
+                partNumber: configRow.rail_kit2,
+                description: tariffConstObj[configRow.rail_kit2]?.description,
+                quantity: railKit2_q,
+              });
+            }
+          }
           selectedData.push({
             key: configRow.config,
-            // config: displayConfig,
+            configSource,
             time,
-            upsPartNumber: configRow.ups,
-            upsDescription: tariffConstObj[configRow.ups]?.description,
-            batteryPartNumber: configRow.battery,
-            batteryDescription: tariffConstObj[configRow.battery]?.description,
-            batteryQuantity: configRow.battery_quantity,
-            railKit1: configRow.rail_kit1,
-            railKit1Description: tariffConstObj[configRow.rail_kit1]?.description,
-            railKit1_q: requestState.rackMount
-              ? configRow.rail_kit1 !== configRow.rail_kit2
-                ? +configRow.rail_kit1_q
-                : +configRow.rail_kit1_q + +configRow.rail_kit2_q
-              : 0,
-            railKit2: configRow.rail_kit2,
-            railKit2_q: requestState.rackMount
-              ? configRow.rail_kit1 !== configRow.rail_kit2
-                ? +configRow.rail_kit2_q
-                : 0
-              : 0,
-            railKit2Description: tariffConstObj[configRow.rail_kit2]?.description,
             price:
               configRow.battery_quantity > 0
                 ? +tariffConstObj[configRow.ups]?.price +
@@ -141,6 +161,7 @@ const UpsSelector = () => {
               (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
             ),
           });
+
           lastUps = configRow.ups;
         }
       }
@@ -166,7 +187,14 @@ const UpsSelector = () => {
       width: "50%",
       render: (text, record, index) => (
         <>
-          <Link href={selectData[index].href} target="_blank">
+          <Text>
+            Конфигурация для мощности {requestState.upsSystemFullPower} Вт, $
+            {requestState.batteryRuntime} мин, тип установки{" "}
+            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
+            время автономии <strong>{selectData[index].time} мин</strong> , резерв по
+            мощности <strong>{selectData[index].powerReserve}%</strong>
+          </Text>
+          {/* <Link href={selectData[index].href} target="_blank">
             <strong>{selectData[index].upsPartNumber}</strong>{" "}
           </Link>
           <Text>{selectData[index].upsDescription}</Text>
@@ -202,28 +230,55 @@ const UpsSelector = () => {
                 {selectData[index].railKit2Description}
               </Text>
             </>
-          )}
+          )} */}
+          <Table
+            dataSource={selectData[index].configSource}
+            columns={selectConfigColumns}
+            showHeader={false}
+            pagination={false}
+          />
         </>
       ),
     },
-    {
-      title: "Расчетное время (мин)",
-      key: "time",
-      dataIndex: "time",
-      width: "5%",
-    },
-    {
-      title: "Резерв по мощности %",
-      key: "powerReserve",
-      dataIndex: "powerReserve",
-      width: "5%",
-    },
+    // {
+    //   title: "Расчетное время (мин)",
+    //   key: "time",
+    //   dataIndex: "time",
+    //   width: "5%",
+    // },
+    // {
+    //   title: "Резерв по мощности %",
+    //   key: "powerReserve",
+    //   dataIndex: "powerReserve",
+    //   width: "5%",
+    // },
     {
       title: "Цена Тариф, руб (с НДС)",
       key: "price",
       dataIndex: "price",
       width: "5%",
       render: (text, record, index) => <>{strUSD(text)}</>,
+    },
+  ];
+
+  const selectConfigColumns = [
+    {
+      title: "кол-во",
+      key: "quantity",
+      dataIndex: "quantity",
+      width: "3%",
+    },
+    {
+      title: "Партномер",
+      key: "partNumber",
+      dataIndex: "partNumber",
+      width: "7%",
+    },
+    {
+      title: "Описание",
+      key: "description",
+      dataIndex: "description",
+      width: "50%",
     },
   ];
 
@@ -333,13 +388,13 @@ const UpsSelector = () => {
         <Card>
           <>
             <Typography.Title level={3}>
-              Предлагаемые конфгурации ИБП и дополнительных батарей
+              Предлагаемые конфигурации ИБП и дополнительных батарей
             </Typography.Title>
             <Table
               dataSource={selectData}
               columns={selectDataColumns}
               size="small"
-              scroll={{ y: 300 }}
+              scroll={{ y: 600 }}
               pagination={false}
             />
           </>
