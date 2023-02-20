@@ -12,6 +12,7 @@ import {
   Col,
   Table,
   Checkbox,
+  Collapse,
   // Text,
 } from "antd";
 import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
@@ -287,73 +288,75 @@ const UpsSelector = () => {
         </Form.Item>
         {finish && (
           <>
-            <Typography.Title level={3}>Опции </Typography.Title>
-            <Text>Фазы вход-выход </Text>
-            <Checkbox
-              checked={requestState.phase11}
-              onChange={(e) => updateInput(e.target.checked, "phase11")}
-            >
-              1-1
-            </Checkbox>
-            <Checkbox
-              checked={requestState.phase31}
-              onChange={(e) => updateInput(e.target.checked, "phase31")}
-            >
-              3-1
-            </Checkbox>
-            <Checkbox
-              checked={requestState.phase33}
-              onChange={(e) => updateInput(e.target.checked, "phase33")}
-            >
-              3-3
-            </Checkbox>
-            <br />
-            <Text>Тип выходных розеток </Text>
-            <Checkbox
-              checked={requestState.outletSchuko}
-              onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
-            >
-              Schuko (Евро-розетки)
-            </Checkbox>
-            <Checkbox
-              checked={requestState.outletIECC13}
-              onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
-            >
-              IEC C13/C19
-            </Checkbox>
-            <Checkbox
-              checked={requestState.outletHW}
-              onChange={(e) => updateInput(e.target.checked, "outletHW")}
-            >
-              Клеммный выход
-            </Checkbox>
-            <br />
-            <Text>Установка в стойку 19`` </Text>
-            <Checkbox
-              checked={requestState.rackMount}
-              onChange={(e) => updateInput(e.target.checked, "rackMount")}
-            >
-              {requestState.rackMount ? "да" : "нет"}
-            </Checkbox>
-            {/* <br />
+            {/* <Typography.Title level={3}>Опции </Typography.Title> */}
+            <Collapse bordered={false} defaultActiveKey={["1"]}>
+              <Collapse.Panel header={"Опции выбора"}>
+                <Text>Фазы вход-выход </Text>
+                <Checkbox
+                  checked={requestState.phase11}
+                  onChange={(e) => updateInput(e.target.checked, "phase11")}
+                >
+                  1-1
+                </Checkbox>
+                <Checkbox
+                  checked={requestState.phase31}
+                  onChange={(e) => updateInput(e.target.checked, "phase31")}
+                >
+                  3-1
+                </Checkbox>
+                <Checkbox
+                  checked={requestState.phase33}
+                  onChange={(e) => updateInput(e.target.checked, "phase33")}
+                >
+                  3-3
+                </Checkbox>
+                <br />
+                <Text>Тип выходных розеток </Text>
+                <Checkbox
+                  checked={requestState.outletSchuko}
+                  onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
+                >
+                  Schuko (Евро-розетки)
+                </Checkbox>
+                <Checkbox
+                  checked={requestState.outletIECC13}
+                  onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
+                >
+                  IEC C13/C19
+                </Checkbox>
+                <Checkbox
+                  checked={requestState.outletHW}
+                  onChange={(e) => updateInput(e.target.checked, "outletHW")}
+                >
+                  Клеммный выход
+                </Checkbox>
+                <br />
+                <Text>Установка в стойку 19`` </Text>
+                <Checkbox
+                  checked={requestState.rackMount}
+                  onChange={(e) => updateInput(e.target.checked, "rackMount")}
+                >
+                  {requestState.rackMount ? "да" : "нет"}
+                </Checkbox>
+                {/* <br />
             <Text>Карта управления SNMP добавить </Text>
             <Checkbox
-              checked={requestState.snmpCard}
-              onChange={(e) => updateInput(e.target.checked, "snmpCard")}
+            checked={requestState.snmpCard}
+            onChange={(e) => updateInput(e.target.checked, "snmpCard")}
             >
-              {requestState.snmpCard ? "да" : "нет"}
-            </Checkbox> */}
-            <br />
-            <Text>Сортировать </Text>
-            <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
-              <Radio value="price">По цене </Radio>
-              <Radio value="powerReserve">По резерву мощности </Radio>
-            </Radio.Group>
+            {requestState.snmpCard ? "да" : "нет"}
+          </Checkbox> */}
+                <br />
+                <Text>Сортировать </Text>
+                <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
+                  <Radio value="price">По цене </Radio>
+                  <Radio value="powerReserve">По резерву мощности </Radio>
+                </Radio.Group>
+              </Collapse.Panel>
+            </Collapse>
           </>
         )}
-      </Card>
-      {finish && (
-        <Card>
+        {finish && (
           <>
             <Typography.Title level={3}>
               Предлагаемые конфигурации ИБП и дополнительных батарей
@@ -366,8 +369,8 @@ const UpsSelector = () => {
               pagination={false}
             />
           </>
-        </Card>
-      )}
+        )}
+      </Card>
     </>
   );
 };
