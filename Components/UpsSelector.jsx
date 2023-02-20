@@ -147,6 +147,7 @@ const UpsSelector = () => {
           }
           selectedData.push({
             key: configRow.config,
+            config: configRow.config,
             configSource,
             time,
             price:
@@ -179,106 +180,73 @@ const UpsSelector = () => {
     setFinish(true);
   }
 
-  const selectDataColumns = [
+  const headerConfigSource = [
     {
-      title: "Конфигурация",
-      key: "config",
-      dataIndex: "config",
-      width: "50%",
-      render: (text, record, index) => (
-        <>
-          <Text>
-            Конфигурация для мощности {requestState.upsSystemFullPower} Вт, $
-            {requestState.batteryRuntime} мин, тип установки{" "}
-            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
-            время автономии <strong>{selectData[index].time} мин</strong> , резерв по
-            мощности <strong>{selectData[index].powerReserve}%</strong>
-          </Text>
-          {/* <Link href={selectData[index].href} target="_blank">
-            <strong>{selectData[index].upsPartNumber}</strong>{" "}
-          </Link>
-          <Text>{selectData[index].upsDescription}</Text>
-          {selectData[index].batteryQuantity > 0 && (
-            <>
-              <br />
-              <Text>
-                {selectData[index].batteryQuantity}
-                {"x "}
-                <strong>{selectData[index].batteryPartNumber}</strong>{" "}
-                {selectData[index].batteryDescription}
-              </Text>
-            </>
-          )}
-          {selectData[index].railKit1_q > 0 && (
-            <>
-              <br />
-              <Text>
-                {selectData[index].railKit1_q}
-                {"x "}
-                <strong>{selectData[index].railKit1}</strong>{" "}
-                {selectData[index].railKit1Description}
-              </Text>
-            </>
-          )}
-          {selectData[index].railKit2_q > 0 && (
-            <>
-              <br />
-              <Text>
-                {selectData[index].railKit2_q}
-                {"x "}
-                <strong>{selectData[index].railKit2}</strong>{" "}
-                {selectData[index].railKit2Description}
-              </Text>
-            </>
-          )} */}
-          <Table
-            dataSource={selectData[index].configSource}
-            columns={selectConfigColumns}
-            showHeader={false}
-            pagination={false}
-          />
-        </>
-      ),
-    },
-    // {
-    //   title: "Расчетное время (мин)",
-    //   key: "time",
-    //   dataIndex: "time",
-    //   width: "5%",
-    // },
-    // {
-    //   title: "Резерв по мощности %",
-    //   key: "powerReserve",
-    //   dataIndex: "powerReserve",
-    //   width: "5%",
-    // },
-    {
-      title: "Цена Тариф, руб (с НДС)",
-      key: "price",
-      dataIndex: "price",
-      width: "5%",
-      render: (text, record, index) => <>{strUSD(text)}</>,
+      partNumber: "Артикул",
+      description: "Описание",
+      quantity: "Кол-во",
     },
   ];
-
   const selectConfigColumns = [
     {
-      title: "кол-во",
-      key: "quantity",
-      dataIndex: "quantity",
-      width: "3%",
-    },
-    {
-      title: "Партномер",
+      title: "Артикул",
       key: "partNumber",
       dataIndex: "partNumber",
       width: "7%",
+    },
+    {
+      title: "Кол-во",
+      key: "quantity",
+      dataIndex: "quantity",
+      width: "3%",
     },
     {
       title: "Описание",
       key: "description",
       dataIndex: "description",
       width: "50%",
+    },
+  ];
+
+  const selectDataColumns = [
+    {
+      title: (
+        <Table
+          dataSource={headerConfigSource}
+          columns={selectConfigColumns}
+          showHeader={false}
+          pagination={false}
+        />
+      ),
+      // title: "Конфигурация",
+      key: "config",
+      dataIndex: "config",
+      width: "50%",
+      render: (text, record, index) => (
+        <div style={{ border: "solid", borderColor: "lightgray" }}>
+          <Text>
+            Конфигурация для мощности {requestState.upsSystemFullPower} Вт,{" "}
+            {requestState.batteryRuntime} мин, тип установки{" "}
+            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
+            время автономии <strong>{selectData[index].time} мин</strong> , резерв по
+            мощности <strong>{selectData[index].powerReserve}%</strong>
+          </Text>
+          <Table
+            dataSource={selectData[index].configSource}
+            columns={selectConfigColumns}
+            showHeader={false}
+            pagination={false}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Цена Тариф, руб (с НДС)",
+      key: "price",
+      dataIndex: "price",
+      width: "5%",
+      align: "right",
+      render: (text, record, index) => <>{strUSD(text)}</>,
     },
   ];
 
