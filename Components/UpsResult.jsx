@@ -1,32 +1,28 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-  Button,
   Typography,
   Form,
   Radio,
   InputNumber,
-  Input,
-  Space,
   Card,
-  Row,
-  Col,
   Table,
   Checkbox,
   Collapse,
-  // Text,
 } from "antd";
-import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeConst";
 import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 import { strUSD } from "@/utils/appConsts";
+import { useRouter } from "next/router";
 
-const { Paragraph, Text, Link } = Typography;
+const { Text, Link } = Typography;
 
 const UpsResult = () => {
-  console.log("UpsResult");
+  // console.log("UpsResult");
+  const router = useRouter();
+  // console.log("UpsResult", router.query);
   const [requestState, setRequestState] = useState({
-    upsSystemFullPower: 500,
-    batteryRuntime: 5,
+    upsSystemFullPower: +router.query.power,
+    batteryRuntime: +router.query.time,
     phase11: true,
     phase31: true,
     phase33: true,
@@ -36,7 +32,7 @@ const UpsResult = () => {
     rackMount: false,
     snmpCard: false,
   });
-  const [finish, setFinish] = useState(false);
+  // const [finish, setFinish] = useState(true);
   const [selectData, setSelectData] = useState([]);
   const [sort, setSort] = useState("price");
 
@@ -48,7 +44,7 @@ const UpsResult = () => {
       [name]: value,
     });
     // setFinish(false);
-    onFinishClick();
+    // onFinishClick();
   };
 
   function calculateRunTime({ power, runtime, fullUpsPower, kx, px }) {
@@ -174,12 +170,12 @@ const UpsResult = () => {
       // setSelectData(selectedData);
     }
     setSelectData(getSelectTable());
-  }, [finish, requestState, sort]);
+  }, [requestState, sort]);
 
-  function onFinishClick() {
-    console.log("finish");
-    setFinish(true);
-  }
+  // function onFinishClick() {
+  //   console.log("finish");
+  //   setFinish(true);
+  // }
 
   const headerConfigSource = [
     {
@@ -254,91 +250,73 @@ const UpsResult = () => {
   return (
     <>
       <Card>
-        <Typography.Title level={2}>Systeme Electric</Typography.Title>
-        <Typography.Title level={3}>
-          Выбор 1-фазных и 3-фазных ИБП по мощности нагрузки
-        </Typography.Title>
-        <Form.Item>
-          <label>Задайте мощность нагрузки 0 - 80 000(Вт) </label>
-          <InputNumber
-            min={1}
-            // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
-            value={requestState.upsSystemFullPower}
-            onChange={(e) => updateInput(e, "upsSystemFullPower")}
-          />
-          <br />
-          <label name="batteryRuntime"> Задайте время работы от АКБ (мин) </label>
-          <InputNumber
-            min={1}
-            max={1200}
-            // defaultValue={5}
-            value={requestState.batteryRuntime}
-            onChange={(value) => updateInput(value, "batteryRuntime")}
-          />
-          <br />
-          <Button
-            type="primary"
-            onClick={onFinishClick}
-            // disabled={requestState.upsSystemFullPower > maxSystemPowerInput}
-          >
-            <ArrowRightOutlined />
-            Подобрать ИБП
-          </Button>
-          {/* <Radio>Ds,thbnt </Radio> */}
-        </Form.Item>
-        {finish && (
-          <>
-            {/* <Typography.Title level={3}>Опции </Typography.Title> */}
-            <Collapse bordered={false} defaultActiveKey={["1"]}>
-              <Collapse.Panel header={"Опции выбора"}>
-                <Text>Фазы вход-выход </Text>
-                <Checkbox
-                  checked={requestState.phase11}
-                  onChange={(e) => updateInput(e.target.checked, "phase11")}
-                >
-                  1-1
-                </Checkbox>
-                <Checkbox
-                  checked={requestState.phase31}
-                  onChange={(e) => updateInput(e.target.checked, "phase31")}
-                >
-                  3-1
-                </Checkbox>
-                <Checkbox
-                  checked={requestState.phase33}
-                  onChange={(e) => updateInput(e.target.checked, "phase33")}
-                >
-                  3-3
-                </Checkbox>
-                <br />
-                <Text>Тип выходных розеток </Text>
-                <Checkbox
-                  checked={requestState.outletSchuko}
-                  onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
-                >
-                  Schuko (Евро-розетки)
-                </Checkbox>
-                <Checkbox
-                  checked={requestState.outletIECC13}
-                  onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
-                >
-                  IEC C13/C19
-                </Checkbox>
-                <Checkbox
-                  checked={requestState.outletHW}
-                  onChange={(e) => updateInput(e.target.checked, "outletHW")}
-                >
-                  Клеммный выход
-                </Checkbox>
-                <br />
-                <Text>Установка в стойку 19`` </Text>
-                <Checkbox
-                  checked={requestState.rackMount}
-                  onChange={(e) => updateInput(e.target.checked, "rackMount")}
-                >
-                  {requestState.rackMount ? "да" : "нет"}
-                </Checkbox>
-                {/* <br />
+        <Collapse bordered={false} defaultActiveKey={["1"]}>
+          <Collapse.Panel header={"Опции выбора"}>
+            <Text>Мощность нагрузки 0 - 80 000(Вт) </Text>
+            <InputNumber
+              min={1}
+              // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
+              value={requestState.upsSystemFullPower}
+              onChange={(e) => updateInput(e, "upsSystemFullPower")}
+            />
+            <br />
+            <Text name="batteryRuntime">Время работы от АКБ (мин) </Text>
+            <InputNumber
+              min={1}
+              max={1200}
+              // defaultValue={5}
+              value={requestState.batteryRuntime}
+              onChange={(value) => updateInput(value, "batteryRuntime")}
+            />
+            <br />
+            <Text>Фазы вход-выход </Text>
+            <Checkbox
+              checked={requestState.phase11}
+              onChange={(e) => updateInput(e.target.checked, "phase11")}
+            >
+              1-1
+            </Checkbox>
+            <Checkbox
+              checked={requestState.phase31}
+              onChange={(e) => updateInput(e.target.checked, "phase31")}
+            >
+              3-1
+            </Checkbox>
+            <Checkbox
+              checked={requestState.phase33}
+              onChange={(e) => updateInput(e.target.checked, "phase33")}
+            >
+              3-3
+            </Checkbox>
+            <br />
+            <Text>Тип выходных розеток </Text>
+            <Checkbox
+              checked={requestState.outletSchuko}
+              onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
+            >
+              Schuko (Евро-розетки)
+            </Checkbox>
+            <Checkbox
+              checked={requestState.outletIECC13}
+              onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
+            >
+              IEC C13/C19
+            </Checkbox>
+            <Checkbox
+              checked={requestState.outletHW}
+              onChange={(e) => updateInput(e.target.checked, "outletHW")}
+            >
+              Клеммный выход
+            </Checkbox>
+            <br />
+            <Text>Установка в стойку 19`` </Text>
+            <Checkbox
+              checked={requestState.rackMount}
+              onChange={(e) => updateInput(e.target.checked, "rackMount")}
+            >
+              {requestState.rackMount ? "да" : "нет"}
+            </Checkbox>
+            {/* <br />
             <Text>Карта управления SNMP добавить </Text>
             <Checkbox
             checked={requestState.snmpCard}
@@ -346,30 +324,25 @@ const UpsResult = () => {
             >
             {requestState.snmpCard ? "да" : "нет"}
           </Checkbox> */}
-                <br />
-                <Text>Сортировать </Text>
-                <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
-                  <Radio value="price">По цене </Radio>
-                  <Radio value="powerReserve">По резерву мощности </Radio>
-                </Radio.Group>
-              </Collapse.Panel>
-            </Collapse>
-          </>
-        )}
-        {finish && (
-          <>
-            <Typography.Title level={3}>
-              Предлагаемые конфигурации ИБП и дополнительных батарей
-            </Typography.Title>
-            <Table
-              dataSource={selectData}
-              columns={selectDataColumns}
-              size="small"
-              scroll={{ y: 600 }}
-              pagination={false}
-            />
-          </>
-        )}
+            <br />
+            <Text>Сортировать </Text>
+            <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
+              <Radio value="price">По цене </Radio>
+              <Radio value="powerReserve">По резерву мощности </Radio>
+            </Radio.Group>
+          </Collapse.Panel>
+        </Collapse>
+
+        <Typography.Title level={3}>
+          Предлагаемые конфигурации ИБП и дополнительных батарей
+        </Typography.Title>
+        <Table
+          dataSource={selectData}
+          columns={selectDataColumns}
+          size="small"
+          scroll={{ y: 600 }}
+          pagination={false}
+        />
       </Card>
     </>
   );
