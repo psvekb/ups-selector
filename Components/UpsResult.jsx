@@ -22,8 +22,8 @@ import { strUSD } from "@/utils/appConsts";
 
 const { Paragraph, Text, Link } = Typography;
 
-const UpsSelector = () => {
-  console.log("UpsSelector");
+const UpsResult = () => {
+  console.log("UpsResult");
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: 500,
     batteryRuntime: 5,
@@ -375,4 +375,4 @@ const UpsSelector = () => {
   );
 };
 
-export default UpsSelector;
+export default UpsResult;
