@@ -13,13 +13,16 @@ import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeCo
 import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 import { strUSD } from "@/utils/appConsts";
 import { useRouter } from "next/router";
+import LoadingScreen from "./LoadingScreeen";
 
 const { Text, Link } = Typography;
 
 const UpsResult = () => {
   // console.log("UpsResult");
   const router = useRouter();
-  // console.log("UpsResult", router.query);
+  console.log("UpsResult,router", router, "router.query", router.query);
+  const [loading, setLoading] = useState(true);
+  // const [loadingQuery, setLoadingQuery] = useState(true);
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: +router.query.power,
     batteryRuntime: +router.query.time,
@@ -32,7 +35,6 @@ const UpsResult = () => {
     rackMount: false,
     snmpCard: false,
   });
-  // const [finish, setFinish] = useState(true);
   const [selectData, setSelectData] = useState([]);
   const [sort, setSort] = useState("price");
 
@@ -43,8 +45,6 @@ const UpsResult = () => {
       ...requestState,
       [name]: value,
     });
-    // setFinish(false);
-    // onFinishClick();
   };
 
   function calculateRunTime({ power, runtime, fullUpsPower, kx, px }) {
@@ -54,7 +54,19 @@ const UpsResult = () => {
     return power <= fullUpsPower ? time : 0;
   }
 
+  console.log("requestState 1", requestState, loading, router.query);
   useEffect(() => {
+    // if (!Object.keys(router.query).length) {
+    //   console.log("requestState 2", requestState, loading, router.query);
+    //   setRequestState((state) => ({
+    //     ...state,
+    //     upsSystemFullPower: +router.query.power,
+    //     batteryRuntime: +router.query.time,
+    //   }));
+    // }
+    setLoading(false);
+    // console.log(requestState);
+
     function getSelectTable() {
       const selectedData = [];
       let lastUps = "";
@@ -170,7 +182,7 @@ const UpsResult = () => {
       // setSelectData(selectedData);
     }
     setSelectData(getSelectTable());
-  }, [requestState, sort]);
+  }, [requestState, sort, router.query, loading]);
 
   // function onFinishClick() {
   //   console.log("finish");
@@ -249,74 +261,75 @@ const UpsResult = () => {
 
   return (
     <>
-      <Card>
-        <Collapse bordered={false} defaultActiveKey={["1"]}>
-          <Collapse.Panel header={"Опции выбора"}>
-            <Text>Мощность нагрузки 0 - 80 000(Вт) </Text>
-            <InputNumber
-              min={1}
-              // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
-              value={requestState.upsSystemFullPower}
-              onChange={(e) => updateInput(e, "upsSystemFullPower")}
-            />
-            <br />
-            <Text name="batteryRuntime">Время работы от АКБ (мин) </Text>
-            <InputNumber
-              min={1}
-              max={1200}
-              // defaultValue={5}
-              value={requestState.batteryRuntime}
-              onChange={(value) => updateInput(value, "batteryRuntime")}
-            />
-            <br />
-            <Text>Фазы вход-выход </Text>
-            <Checkbox
-              checked={requestState.phase11}
-              onChange={(e) => updateInput(e.target.checked, "phase11")}
-            >
-              1-1
-            </Checkbox>
-            <Checkbox
-              checked={requestState.phase31}
-              onChange={(e) => updateInput(e.target.checked, "phase31")}
-            >
-              3-1
-            </Checkbox>
-            <Checkbox
-              checked={requestState.phase33}
-              onChange={(e) => updateInput(e.target.checked, "phase33")}
-            >
-              3-3
-            </Checkbox>
-            <br />
-            <Text>Тип выходных розеток </Text>
-            <Checkbox
-              checked={requestState.outletSchuko}
-              onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
-            >
-              Schuko (Евро-розетки)
-            </Checkbox>
-            <Checkbox
-              checked={requestState.outletIECC13}
-              onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
-            >
-              IEC C13/C19
-            </Checkbox>
-            <Checkbox
-              checked={requestState.outletHW}
-              onChange={(e) => updateInput(e.target.checked, "outletHW")}
-            >
-              Клеммный выход
-            </Checkbox>
-            <br />
-            <Text>Установка в стойку 19`` </Text>
-            <Checkbox
-              checked={requestState.rackMount}
-              onChange={(e) => updateInput(e.target.checked, "rackMount")}
-            >
-              {requestState.rackMount ? "да" : "нет"}
-            </Checkbox>
-            {/* <br />
+      {!loading ? (
+        <Card>
+          <Collapse bordered={false} defaultActiveKey={["1"]}>
+            <Collapse.Panel header={"Опции выбора"}>
+              <Text>Мощность нагрузки 0 - 80 000(Вт) </Text>
+              <InputNumber
+                min={1}
+                // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
+                value={requestState.upsSystemFullPower}
+                onChange={(e) => updateInput(e, "upsSystemFullPower")}
+              />
+              <br />
+              <Text name="batteryRuntime">Время работы от АКБ (мин) </Text>
+              <InputNumber
+                min={1}
+                max={1200}
+                // defaultValue={5}
+                value={requestState.batteryRuntime}
+                onChange={(value) => updateInput(value, "batteryRuntime")}
+              />
+              <br />
+              <Text>Фазы вход-выход </Text>
+              <Checkbox
+                checked={requestState.phase11}
+                onChange={(e) => updateInput(e.target.checked, "phase11")}
+              >
+                1-1
+              </Checkbox>
+              <Checkbox
+                checked={requestState.phase31}
+                onChange={(e) => updateInput(e.target.checked, "phase31")}
+              >
+                3-1
+              </Checkbox>
+              <Checkbox
+                checked={requestState.phase33}
+                onChange={(e) => updateInput(e.target.checked, "phase33")}
+              >
+                3-3
+              </Checkbox>
+              <br />
+              <Text>Тип выходных розеток </Text>
+              <Checkbox
+                checked={requestState.outletSchuko}
+                onChange={(e) => updateInput(e.target.checked, "outletSchuko")}
+              >
+                Schuko (Евро-розетки)
+              </Checkbox>
+              <Checkbox
+                checked={requestState.outletIECC13}
+                onChange={(e) => updateInput(e.target.checked, "outletIECC13")}
+              >
+                IEC C13/C19
+              </Checkbox>
+              <Checkbox
+                checked={requestState.outletHW}
+                onChange={(e) => updateInput(e.target.checked, "outletHW")}
+              >
+                Клеммный выход
+              </Checkbox>
+              <br />
+              <Text>Установка в стойку 19`` </Text>
+              <Checkbox
+                checked={requestState.rackMount}
+                onChange={(e) => updateInput(e.target.checked, "rackMount")}
+              >
+                {requestState.rackMount ? "да" : "нет"}
+              </Checkbox>
+              {/* <br />
             <Text>Карта управления SNMP добавить </Text>
             <Checkbox
             checked={requestState.snmpCard}
@@ -324,26 +337,36 @@ const UpsResult = () => {
             >
             {requestState.snmpCard ? "да" : "нет"}
           </Checkbox> */}
-            <br />
-            <Text>Сортировать </Text>
-            <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
-              <Radio value="price">По цене </Radio>
-              <Radio value="powerReserve">По резерву мощности </Radio>
-            </Radio.Group>
-          </Collapse.Panel>
-        </Collapse>
+              <br />
+              <Text>Сортировать </Text>
+              <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
+                <Radio value="price">По цене </Radio>
+                <Radio value="powerReserve">По резерву мощности </Radio>
+              </Radio.Group>
+            </Collapse.Panel>
+          </Collapse>
 
-        <Typography.Title level={3}>
-          Предлагаемые конфигурации ИБП и дополнительных батарей
-        </Typography.Title>
-        <Table
-          dataSource={selectData}
-          columns={selectDataColumns}
-          size="small"
-          scroll={{ y: 600 }}
-          pagination={false}
-        />
-      </Card>
+          <Typography.Title level={3}>
+            Предлагаемые конфигурации ИБП и дополнительных батарей
+          </Typography.Title>
+          {selectData.length != 0 && (
+            <Table
+              dataSource={selectData}
+              columns={selectDataColumns}
+              size="small"
+              scroll={{ y: 600 }}
+              pagination={false}
+            />
+          )}
+          {selectData.length == 0 && (
+            <Text>
+              Требуемая конфигурация не найдена, попробуйте уменьшить время или мощность
+            </Text>
+          )}
+        </Card>
+      ) : (
+        <LoadingScreen />
+      )}
     </>
   );
 };

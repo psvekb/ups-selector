@@ -4,7 +4,7 @@ import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 
 import LoadingScreen from "./LoadingScreeen";
 import { useRouter } from "next/router";
-// import Link from "next/link";
+import Link from "next/link";
 
 // const { Paragraph, Text } = Typography;
 
@@ -80,15 +80,15 @@ const UpsRequest = () => {
               onChange={(value) => updateInput(value, "batteryRuntime")}
             />
             <br />
-            <Button
+            {/* <Button
               type="primary"
               onClick={onFinishClick}
               // disabled={requestState.upsSystemFullPower > maxSystemPowerInput}
             >
               <ArrowRightOutlined />
               Подобрать ИБП
-            </Button>
-            {/* <Link
+            </Button> */}
+            <Link
               href={{
                 pathname: "/result",
                 query: {
@@ -97,8 +97,11 @@ const UpsRequest = () => {
                 },
               }}
             >
-              Подобрать ИБП
-            </Link> */}
+              <Button type="link">
+                <ArrowRightOutlined />
+                Подобрать ИБП
+              </Button>
+            </Link>
           </Form.Item>
         </Card>
       ) : (
