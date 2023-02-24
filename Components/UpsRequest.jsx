@@ -13,14 +13,6 @@ const UpsRequest = () => {
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: 500,
     batteryRuntime: 5,
-    // phase11: true,
-    // phase31: true,
-    // phase33: true,
-    // outletSchuko: true,
-    // outletIECC13: true,
-    // outletHW: true,
-    // rackMount: false,
-    // snmpCard: false,
   });
   // const [finish, setFinish] = useState(false);
 
@@ -71,7 +63,10 @@ const UpsRequest = () => {
               onChange={(e) => updateInput(e, "upsSystemFullPower")}
             />
             <br />
-            <label name="batteryRuntime"> Задайте время работы от АКБ (мин) </label>
+            <label name="batteryRuntime">
+              {" "}
+              Задайте время работы от АКБ (мин){" "}
+            </label>
             <InputNumber
               min={1}
               max={1200}
