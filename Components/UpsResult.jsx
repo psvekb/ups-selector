@@ -20,9 +20,10 @@ import LoadingScreen from "./LoadingScreeen";
 
 const { Text, Link } = Typography;
 
-function getQueryVariable(variable) {
-  var query = window.location.search.substring(1);
-  var vars = query.split("&");
+function getQueryVariable(query, variable) {
+  // var query = window.location.search.substring(1);
+  var vars = query.slice(query.indexOf("?") + 1).split("&");
+  // var vars = query.slice(query.indexOf("/") + 1).split("&");
   for (var i = 0; i < vars.length; i++) {
     var pair = vars[i].split("=");
     if (decodeURIComponent(pair[0]) == variable) {
@@ -43,8 +44,8 @@ const UpsResult = () => {
   const [loading, setLoading] = useState(true);
   // const [loadingQuery, setLoadingQuery] = useState(true);
   const [requestState, setRequestState] = useState({
-    upsSystemFullPower: +getQueryVariable("power"),
-    batteryRuntime: +getQueryVariable("time"),
+    upsSystemFullPower: +getQueryVariable(router.asPath, "power"),
+    batteryRuntime: +getQueryVariable(router.asPath, "time"),
     // upsSystemFullPower: +router.query.power,
     // batteryRuntime: +router.query.time,
     phase11: true,
@@ -225,19 +226,19 @@ const UpsResult = () => {
       title: "Артикул",
       key: "partNumber",
       dataIndex: "partNumber",
-      width: "7%",
+      width: 140,
     },
     {
       title: "Кол-во",
       key: "quantity",
       dataIndex: "quantity",
-      width: "3%",
+      width: 10,
     },
     {
       title: "Описание",
       key: "description",
       dataIndex: "description",
-      width: "50%",
+      // width: "50%",
     },
   ];
 
@@ -254,7 +255,7 @@ const UpsResult = () => {
       // title: "Конфигурация",
       key: "config",
       dataIndex: "config",
-      width: "50%",
+      // width: "50%",
       render: (text, record, index) => (
         <div style={{ border: "solid", borderColor: "lightgray" }}>
           <Text>
@@ -278,7 +279,7 @@ const UpsResult = () => {
       title: "Цена Тариф, руб (с НДС)",
       key: "price",
       dataIndex: "price",
-      width: "5%",
+      width: 100,
       align: "right",
       render: (text, record, index) => <>{strUSD(text)}</>,
     },
@@ -382,7 +383,7 @@ const UpsResult = () => {
               dataSource={selectData}
               columns={selectDataColumns}
               size="small"
-              scroll={{ y: 600 }}
+              // scroll={{ y: 600 }}
               pagination={false}
             />
           )}
