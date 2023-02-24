@@ -9,7 +9,10 @@ import {
   Checkbox,
   Collapse,
 } from "antd";
-import { runtimeConstArr, runtimeConstObj } from "../utils/upsselector/runtimeConst";
+import {
+  runtimeConstArr,
+  runtimeConstObj,
+} from "../utils/upsselector/runtimeConst";
 import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 import { strUSD } from "@/utils/appConsts";
 import { useRouter } from "next/router";
@@ -17,15 +20,33 @@ import LoadingScreen from "./LoadingScreeen";
 
 const { Text, Link } = Typography;
 
+function getQueryVariable(variable) {
+  var query = window.location.search.substring(1);
+  var vars = query.split("&");
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    if (decodeURIComponent(pair[0]) == variable) {
+      return decodeURIComponent(pair[1]);
+    }
+  }
+  console.log("Query variable %s not found", variable);
+}
+
 const UpsResult = () => {
   // console.log("UpsResult");
   const router = useRouter();
   console.log("UpsResult,router", router, "router.query", router.query);
+  console.log("UpsResult,router-asPath", router.asPath);
+  console.log("UpsResult,power", getQueryVariable("power"));
+  console.log("UpsResult,time", getQueryVariable("time"));
+
   const [loading, setLoading] = useState(true);
   // const [loadingQuery, setLoadingQuery] = useState(true);
   const [requestState, setRequestState] = useState({
-    upsSystemFullPower: +router.query.power,
-    batteryRuntime: +router.query.time,
+    upsSystemFullPower: +getQueryVariable("power"),
+    batteryRuntime: +getQueryVariable("time"),
+    // upsSystemFullPower: +router.query.power,
+    // batteryRuntime: +router.query.time,
     phase11: true,
     phase31: true,
     phase33: true,
@@ -110,9 +131,11 @@ const UpsResult = () => {
           // console.log("configRow", configRow);
           const railKitPrice =
             configRow.rail_kit1_q > 0 && requestState.rackMount
-              ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
+              ? +configRow.rail_kit1_q *
+                +tariffConstObj[configRow.rail_kit1]?.price
               : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
-              ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
+              ? +configRow.rail_kit2_q *
+                +tariffConstObj[configRow.rail_kit2]?.price
               : 0;
           const configSource = [
             {
@@ -168,7 +191,8 @@ const UpsResult = () => {
                 : +tariffConstObj[configRow.ups]?.price + railKitPrice,
             href: configRow.href,
             powerReserve: Math.round(
-              (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
+              (1 - requestState.upsSystemFullPower / configRow.full_ups_power) *
+                100
             ),
           });
 
@@ -236,9 +260,10 @@ const UpsResult = () => {
           <Text>
             Конфигурация для мощности {requestState.upsSystemFullPower} Вт,{" "}
             {requestState.batteryRuntime} мин, тип установки{" "}
-            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
-            время автономии <strong>{selectData[index].time} мин</strong> , резерв по
-            мощности <strong>{selectData[index].powerReserve}%</strong>
+            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>.
+            Расчетное время автономии{" "}
+            <strong>{selectData[index].time} мин</strong> , резерв по мощности{" "}
+            <strong>{selectData[index].powerReserve}%</strong>
           </Text>
           <Table
             dataSource={selectData[index].configSource}
@@ -339,7 +364,10 @@ const UpsResult = () => {
           </Checkbox> */}
               <br />
               <Text>Сортировать </Text>
-              <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
+              <Radio.Group
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
                 <Radio value="price">По цене </Radio>
                 <Radio value="powerReserve">По резерву мощности </Radio>
               </Radio.Group>
@@ -360,7 +388,8 @@ const UpsResult = () => {
           )}
           {selectData.length == 0 && (
             <Text>
-              Требуемая конфигурация не найдена, попробуйте уменьшить время или мощность
+              Требуемая конфигурация не найдена, попробуйте уменьшить время или
+              мощность
             </Text>
           )}
         </Card>
