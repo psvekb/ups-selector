@@ -284,11 +284,11 @@ const UpsResult = () => {
                   " Вт)"}
               , {requestState.batteryRuntime} мин
             </strong>
-            , тип установки{" "}
+            ,{requestState.rackMount !== "any" && "тип установки "}
             <strong>
-              {requestState.rackMount == "19"
-                ? "стойка 19`` (" + selectData[index].units + "U)"
-                : "башня"}
+              {requestState.rackMount == "19" &&
+                "стойка 19`` (" + selectData[index].units + "U)"}
+              {requestState.rackMount == "tower" && "башня"}
             </strong>
             . Расчетное время автономии <strong>{selectData[index].time} мин</strong> ,
             резерв по мощности <strong>{selectData[index].powerReserve}%</strong>
