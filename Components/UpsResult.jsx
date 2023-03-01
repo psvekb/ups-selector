@@ -14,18 +14,38 @@ import { tariffConstObj } from "@/utils/upsselector/tariffConst";
 import { strUSD } from "@/utils/appConsts";
 import { useRouter } from "next/router";
 import LoadingScreen from "./LoadingScreeen";
+import Head from "next/head";
 
 const { Text, Link } = Typography;
+
+function getQueryVariable(query, variable) {
+  // var query = window.location.search.substring(1);
+  var vars = query.slice(query.indexOf("?") + 1).split("&");
+  // var vars = query.slice(query.indexOf("/") + 1).split("&");
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    if (decodeURIComponent(pair[0]) == variable) {
+      return decodeURIComponent(pair[1]);
+    }
+  }
+  console.log("Query variable %s not found", variable);
+}
 
 const UpsResult = () => {
   // console.log("UpsResult");
   const router = useRouter();
-  console.log("UpsResult,router", router, "router.query", router.query);
+  // console.log("UpsResult,router", router, "router.query", router.query);
+  // console.log("UpsResult,router-asPath", router.asPath);
+  // console.log("UpsResult,power", getQueryVariable("power"));
+  // console.log("UpsResult,time", getQueryVariable("time"));
+
   const [loading, setLoading] = useState(true);
   // const [loadingQuery, setLoadingQuery] = useState(true);
   const [requestState, setRequestState] = useState({
-    upsSystemFullPower: +router.query.power,
-    batteryRuntime: +router.query.time,
+    upsSystemFullPower: +getQueryVariable(router.asPath, "power"),
+    batteryRuntime: +getQueryVariable(router.asPath, "time"),
+    // upsSystemFullPower: +router.query.power,
+    // batteryRuntime: +router.query.time,
     phase11: true,
     phase31: true,
     phase33: true,
@@ -34,6 +54,7 @@ const UpsResult = () => {
     outletHW: true,
     rackMount: false,
     snmpCard: false,
+    snmpCardTempSensor: false,
   });
   const [selectData, setSelectData] = useState([]);
   const [sort, setSort] = useState("price");
@@ -54,7 +75,7 @@ const UpsResult = () => {
     return power <= fullUpsPower ? time : 0;
   }
 
-  console.log("requestState 1", requestState, loading, router.query);
+  // console.log("requestState 1", requestState, loading, router.query);
   useEffect(() => {
     // if (!Object.keys(router.query).length) {
     //   console.log("requestState 2", requestState, loading, router.query);
@@ -73,8 +94,7 @@ const UpsResult = () => {
       for (let i = 1; i < runtimeConstArr.length - 1; i++) {
         const configRow = runtimeConstObj[runtimeConstArr[i][0]];
         // console.log("configRow", configRow);
-        // console.log("requestState.phase11", requestState.phase11);
-        // console.log("requestState.phase31", requestState.phase31);
+
         const time = calculateRunTime({
           power: requestState.upsSystemFullPower,
           runtime: requestState.batteryRuntime,
@@ -95,25 +115,28 @@ const UpsResult = () => {
           (requestState.rackMount == false && configRow.mount === "tower") ||
           configRow.mount === "convertible" ||
           (requestState.rackMount == true && configRow.mount === "rack");
-        // const snmpPreInstalledOk =
-        //   (requestState.snmpCard && configRow.card_snmp_installed === "1") ||
-        //   (!requestState.snmpCard && configRow.card_snmp_installed === "0");
+        const snmpOk =
+          configRow.card_snmp_installed === "1" ||
+          (requestState.snmpCard && configRow.card_snmp_option !== "no") ||
+          (!requestState.snmpCard && configRow.card_snmp_installed === "0");
+        // console.log("snmpOk", snmpOk);
 
         if (
           time >= requestState.batteryRuntime &&
           lastUps !== configRow.ups &&
           phaseOk &&
           outletOk &&
-          rackOk
-          // snmpPreInstalledOk
+          rackOk &&
+          snmpOk
         ) {
-          // console.log("configRow", configRow);
-          const railKitPrice =
-            configRow.rail_kit1_q > 0 && requestState.rackMount
-              ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
-              : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
-              ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
-              : 0;
+          console.log("configRow", configRow);
+          // let price = 0
+          // const railKitPrice =
+          //   configRow.rail_kit1_q > 0 && requestState.rackMount
+          //     ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
+          //     : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
+          //     ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
+          //     : 0;
           const configSource = [
             {
               partNumber: (
@@ -123,13 +146,36 @@ const UpsResult = () => {
               ),
               description: tariffConstObj[configRow.ups]?.description,
               quantity: 1,
+              price: +tariffConstObj[configRow.ups]?.price,
+              summary: +tariffConstObj[configRow.ups]?.price,
             },
           ];
           if (configRow.battery_quantity > 0) {
             configSource.push({
               partNumber: configRow.battery,
               description: tariffConstObj[configRow.battery]?.description,
-              quantity: configRow.battery_quantity,
+              quantity: +configRow.battery_quantity,
+              price: +tariffConstObj[configRow.battery]?.price,
+              summary:
+                +tariffConstObj[configRow.battery]?.price * configRow.battery_quantity,
+            });
+          }
+          if (requestState.snmpCard && configRow.card_snmp_installed === "0") {
+            configSource.push({
+              partNumber: configRow.card_snmp_option,
+              description: tariffConstObj[configRow.card_snmp_option]?.description,
+              quantity: 1,
+              price: +tariffConstObj[configRow.card_snmp_option]?.price,
+              summary: +tariffConstObj[configRow.card_snmp_option]?.price,
+            });
+          }
+          if (requestState.snmpCardTempSensor && requestState.snmpCard) {
+            configSource.push({
+              partNumber: configRow.card_snmp_temp_sensor,
+              description: tariffConstObj[configRow.card_snmp_temp_sensor]?.description,
+              quantity: 1,
+              price: +tariffConstObj[configRow.card_snmp_temp_sensor]?.price,
+              summary: +tariffConstObj[configRow.card_snmp_temp_sensor]?.price,
             });
           }
           if (requestState.rackMount) {
@@ -144,6 +190,8 @@ const UpsResult = () => {
                 partNumber: configRow.rail_kit1,
                 description: tariffConstObj[configRow.rail_kit1]?.description,
                 quantity: railKit1_q,
+                price: +tariffConstObj[configRow.rail_kit1]?.price,
+                summary: +tariffConstObj[configRow.rail_kit1]?.price * railKit1_q,
               });
             }
             if (railKit2_q > 0) {
@@ -151,21 +199,20 @@ const UpsResult = () => {
                 partNumber: configRow.rail_kit2,
                 description: tariffConstObj[configRow.rail_kit2]?.description,
                 quantity: railKit2_q,
+                price: +tariffConstObj[configRow.rail_kit2]?.price,
+                summary: +tariffConstObj[configRow.rail_kit2]?.price * railKit2_q,
               });
             }
           }
+          const price = configSource.reduce((sum, item) => (sum += item.summary), 0);
+          // const units =
           selectedData.push({
             key: configRow.config,
             config: configRow.config,
             configSource,
             time,
-            price:
-              configRow.battery_quantity > 0
-                ? +tariffConstObj[configRow.ups]?.price +
-                  +configRow.battery_quantity *
-                    +tariffConstObj[configRow.battery]?.price +
-                  railKitPrice
-                : +tariffConstObj[configRow.ups]?.price + railKitPrice,
+            price,
+            // units: 0,
             href: configRow.href,
             powerReserve: Math.round(
               (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
@@ -177,7 +224,7 @@ const UpsResult = () => {
       }
       // console.log("configRow-selectedData", selectedData);
       selectedData.sort((a, b) => a[sort] - b[sort]);
-      // console.log("configRow-selectedData", selectedData);
+      console.log("configRow-selectedData", selectedData);
       return selectedData;
       // setSelectData(selectedData);
     }
@@ -201,19 +248,19 @@ const UpsResult = () => {
       title: "Артикул",
       key: "partNumber",
       dataIndex: "partNumber",
-      width: "7%",
+      width: 140,
     },
     {
       title: "Кол-во",
       key: "quantity",
       dataIndex: "quantity",
-      width: "3%",
+      width: 10,
     },
     {
       title: "Описание",
       key: "description",
       dataIndex: "description",
-      width: "50%",
+      // width: "50%",
     },
   ];
 
@@ -230,12 +277,16 @@ const UpsResult = () => {
       // title: "Конфигурация",
       key: "config",
       dataIndex: "config",
-      width: "50%",
+      // width: "50%",
       render: (text, record, index) => (
         <div style={{ border: "solid", borderColor: "lightgray" }}>
           <Text>
-            Конфигурация для мощности {requestState.upsSystemFullPower} Вт,{" "}
-            {requestState.batteryRuntime} мин, тип установки{" "}
+            Конфигурация для мощности{" "}
+            <strong>
+              {" "}
+              {requestState.upsSystemFullPower} Вт, {requestState.batteryRuntime} мин
+            </strong>
+            , тип установки{" "}
             <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
             время автономии <strong>{selectData[index].time} мин</strong> , резерв по
             мощности <strong>{selectData[index].powerReserve}%</strong>
@@ -253,7 +304,7 @@ const UpsResult = () => {
       title: "Цена Тариф, руб (с НДС)",
       key: "price",
       dataIndex: "price",
-      width: "5%",
+      width: 100,
       align: "right",
       render: (text, record, index) => <>{strUSD(text)}</>,
     },
@@ -261,6 +312,12 @@ const UpsResult = () => {
 
   return (
     <>
+      <Head>
+        <title>Systeme UPS Selector</title>
+        <meta name="description" content="Generated by create next app" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/systeme.ico" />
+      </Head>
       {!loading ? (
         <Card>
           <Collapse bordered={false} defaultActiveKey={["1"]}>
@@ -329,14 +386,31 @@ const UpsResult = () => {
               >
                 {requestState.rackMount ? "да" : "нет"}
               </Checkbox>
-              {/* <br />
-            <Text>Карта управления SNMP добавить </Text>
-            <Checkbox
-            checked={requestState.snmpCard}
-            onChange={(e) => updateInput(e.target.checked, "snmpCard")}
-            >
-            {requestState.snmpCard ? "да" : "нет"}
-          </Checkbox> */}
+              <br />
+              <Text>Карта управления SNMP (добавить) </Text>
+              <Checkbox
+                checked={requestState.snmpCard}
+                onChange={(e) => updateInput(e.target.checked, "snmpCard")}
+              >
+                {requestState.snmpCard ? "да" : "нет"}
+              </Checkbox>
+
+              {/* {requestState.snmpCard && (
+                <> */}
+              <Text disabled={!requestState.snmpCard}>
+                Датчик температуры и влажности (добавить){" "}
+              </Text>
+              <Checkbox
+                disabled={!requestState.snmpCard}
+                checked={
+                  requestState.snmpCardTempSensor && requestState.snmpCard !== false
+                }
+                onChange={(e) => updateInput(e.target.checked, "snmpCardTempSensor")}
+              >
+                {requestState.snmpCardTempSensor ? "да" : "нет"}
+              </Checkbox>
+              {/* </>
+              )} */}
               <br />
               <Text>Сортировать </Text>
               <Radio.Group value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -354,7 +428,7 @@ const UpsResult = () => {
               dataSource={selectData}
               columns={selectDataColumns}
               size="small"
-              scroll={{ y: 600 }}
+              // scroll={{ y: 600 }}
               pagination={false}
             />
           )}
