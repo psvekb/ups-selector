@@ -52,7 +52,7 @@ const UpsResult = () => {
     outletSchuko: true,
     outletIECC13: true,
     outletHW: true,
-    rackMount: false,
+    rackMount: "any",
     snmpCard: false,
     snmpCardTempSensor: false,
   });
@@ -112,9 +112,10 @@ const UpsResult = () => {
           (requestState.outletIECC13 && configRow.outlet === "iec") ||
           (requestState.outletHW && configRow.outlet === "hardwire");
         const rackOk =
-          (requestState.rackMount == false && configRow.mount === "tower") ||
+          (requestState.rackMount == "tower" && configRow.mount === "tower") ||
+          requestState.rackMount == "any" ||
           configRow.mount === "convertible" ||
-          (requestState.rackMount == true && configRow.mount === "rack");
+          (requestState.rackMount == "19" && configRow.mount === "rack");
         const snmpOk =
           configRow.card_snmp_installed === "1" ||
           (requestState.snmpCard && configRow.card_snmp_option !== "no") ||
@@ -178,7 +179,7 @@ const UpsResult = () => {
               summary: +tariffConstObj[configRow.card_snmp_temp_sensor]?.price,
             });
           }
-          if (requestState.rackMount) {
+          if (requestState.rackMount === "19") {
             let railKit1_q = +configRow.rail_kit1_q;
             let railKit2_q = +configRow.rail_kit2_q;
             if (configRow.rail_kit1 === configRow.rail_kit2) {
@@ -287,7 +288,7 @@ const UpsResult = () => {
             </strong>
             , тип установки{" "}
             <strong>
-              {requestState.rackMount
+              {requestState.rackMount == "19"
                 ? "стойка 19`` (" + selectData[index].units + "U)"
                 : "башня"}
             </strong>
@@ -383,12 +384,20 @@ const UpsResult = () => {
               </Checkbox>
               <br />
               <Text>Установка в стойку 19`` </Text>
-              <Checkbox
+              <Radio.Group
+                onChange={(e) => updateInput(e.target.value, "rackMount")}
+                value={requestState.rackMount}
+              >
+                <Radio value={"any"}>Неважно</Radio>
+                <Radio value={"tower"}>только напольный</Radio>
+                <Radio value={"19"}>только в стойку</Radio>
+              </Radio.Group>
+              {/* <Checkbox
                 checked={requestState.rackMount}
                 onChange={(e) => updateInput(e.target.checked, "rackMount")}
               >
                 {requestState.rackMount ? "да" : "нет"}
-              </Checkbox>
+              </Checkbox> */}
               <br />
               <Text>Карта управления SNMP (добавить) </Text>
               <Checkbox
