@@ -44,8 +44,8 @@ const UpsResult = () => {
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: +getQueryVariable(router.asPath, "power"),
     batteryRuntime: +getQueryVariable(router.asPath, "time"),
-    // upsSystemFullPower: +router.query.power,
-    // batteryRuntime: +router.query.time,
+    measure: getQueryVariable(router.asPath, "measure"),
+    pF: +getQueryVariable(router.asPath, "pF"),
     phase11: true,
     phase31: true,
     phase33: true,
@@ -68,23 +68,16 @@ const UpsResult = () => {
     });
   };
 
-  function calculateRunTime({ power, runtime, fullUpsPower, kx, px }) {
-    const load = power / fullUpsPower;
+  function calculateRunTime({ power, fullUpsPowerW, kx, px }) {
+    const load = power / fullUpsPowerW;
     const time = (kx * Math.pow(load, px)).toFixed(2);
     // console.log("time", time);
-    return power <= fullUpsPower ? time : 0;
+    return power <= fullUpsPowerW ? time : 0;
   }
 
-  // console.log("requestState 1", requestState, loading, router.query);
+  console.log("requestState 1", requestState, loading, router.query);
+
   useEffect(() => {
-    // if (!Object.keys(router.query).length) {
-    //   console.log("requestState 2", requestState, loading, router.query);
-    //   setRequestState((state) => ({
-    //     ...state,
-    //     upsSystemFullPower: +router.query.power,
-    //     batteryRuntime: +router.query.time,
-    //   }));
-    // }
     setLoading(false);
     // console.log(requestState);
 
@@ -96,9 +89,11 @@ const UpsResult = () => {
         // console.log("configRow", configRow);
 
         const time = calculateRunTime({
-          power: requestState.upsSystemFullPower,
-          runtime: requestState.batteryRuntime,
-          fullUpsPower: configRow.full_ups_power,
+          power:
+            requestState.measure === "W"
+              ? requestState.upsSystemFullPower
+              : requestState.upsSystemFullPower * requestState.pF,
+          fullUpsPowerW: configRow.full_ups_power_w,
           kx: configRow.kx,
           px: configRow.px,
         });
@@ -131,13 +126,6 @@ const UpsResult = () => {
           snmpOk
         ) {
           console.log("configRow", configRow);
-          // let price = 0
-          // const railKitPrice =
-          //   configRow.rail_kit1_q > 0 && requestState.rackMount
-          //     ? +configRow.rail_kit1_q * +tariffConstObj[configRow.rail_kit1]?.price
-          //     : 0 + configRow.rail_kit2_q > 0 && requestState.rackMount
-          //     ? +configRow.rail_kit2_q * +tariffConstObj[configRow.rail_kit2]?.price
-          //     : 0;
           const configSource = [
             {
               partNumber: (
@@ -215,7 +203,10 @@ const UpsResult = () => {
             units: configRow.units,
             href: configRow.href,
             powerReserve: Math.round(
-              (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
+              (1 -
+                (requestState.upsSystemFullPower / configRow.full_ups_power_w) *
+                  requestState.pF) *
+                100
             ),
           });
 
@@ -284,7 +275,14 @@ const UpsResult = () => {
             Конфигурация для мощности{" "}
             <strong>
               {" "}
-              {requestState.upsSystemFullPower} Вт, {requestState.batteryRuntime} мин
+              {requestState.upsSystemFullPower} {requestState.measure === "W" && "Вт"}
+              {requestState.measure === "VA" &&
+                "ВА (pF=" +
+                  requestState.pF +
+                  ", " +
+                  Math.round(requestState.upsSystemFullPower * requestState.pF) +
+                  " Вт)"}
+              , {requestState.batteryRuntime} мин
             </strong>
             , тип установки{" "}
             <strong>
@@ -326,13 +324,37 @@ const UpsResult = () => {
         <Card>
           <Collapse bordered={false} defaultActiveKey={["1"]}>
             <Collapse.Panel header={"Опции выбора"}>
-              <Text>Мощность нагрузки 0 - 80 000(Вт) </Text>
+              <Text>Мощность нагрузки 0 - 80 000 </Text>
               <InputNumber
                 min={1}
                 // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
                 value={requestState.upsSystemFullPower}
                 onChange={(e) => updateInput(e, "upsSystemFullPower")}
               />
+              <Radio.Group
+                onChange={(e) => updateInput(e.target.value, "measure")}
+                value={requestState.measure}
+              >
+                <Radio value={"W"}>Вт</Radio>
+                <Radio value={"VA"}>ВА</Radio>
+                {/* <Radio value={"kVA"}>кВА</Radio> */}
+              </Radio.Group>
+              {requestState.measure !== "W" && (
+                <>
+                  <br />
+                  <Text>выберите коэффициент мощности нагрузки</Text>
+                  <Radio.Group
+                    onChange={(e) => updateInput(e.target.value, "pF")}
+                    value={requestState.pF}
+                  >
+                    <Radio value={1}>1.0</Radio>
+                    <Radio value={0.9}>0.9</Radio>
+                    <Radio value={0.8}>0.8</Radio>
+                    <Radio value={0.7}>0.7</Radio>
+                    <Radio value={0.6}>0.6</Radio>
+                  </Radio.Group>
+                </>
+              )}
               <br />
               <Text name="batteryRuntime">Время работы от АКБ (мин) </Text>
               <InputNumber

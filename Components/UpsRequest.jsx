@@ -1,18 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Typography, Form, InputNumber, Card } from "antd";
+import { Button, Typography, Form, InputNumber, Card, Radio } from "antd";
 import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 
 import LoadingScreen from "./LoadingScreeen";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
-// const { Paragraph, Text } = Typography;
+const { Paragraph, Text } = Typography;
 
 const UpsRequest = () => {
   console.log("UpsRequest");
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: 500,
     batteryRuntime: 5,
+    measure: "W",
+    pF: 1,
   });
   // const [finish, setFinish] = useState(false);
 
@@ -30,6 +32,18 @@ const UpsRequest = () => {
       ...requestState,
       [name]: value,
     });
+    if (name == "measure" && value !== "W") {
+      setRequestState((state) => ({
+        ...state,
+        pF: 0.7,
+      }));
+    }
+    if (name == "measure" && value === "W") {
+      setRequestState((state) => ({
+        ...state,
+        pF: 1,
+      }));
+    }
   };
 
   function onFinishClick() {
@@ -40,6 +54,8 @@ const UpsRequest = () => {
       query: {
         power: requestState.upsSystemFullPower,
         time: requestState.batteryRuntime,
+        measure: requestState.measure,
+        pF: requestState.pF,
       },
     };
     // router.push("/result");
@@ -55,18 +71,39 @@ const UpsRequest = () => {
             Выбор 1-фазных и 3-фазных ИБП по мощности нагрузки
           </Typography.Title>
           <Form.Item>
-            <label>Задайте мощность нагрузки 0 - 80 000(Вт) </label>
+            <Text>Задайте мощность нагрузки 0 - 80 000 </Text>
             <InputNumber
               min={1}
               // status={requestState.upsSystemFullPower > maxSystemPowerInput && "error"}
               value={requestState.upsSystemFullPower}
               onChange={(e) => updateInput(e, "upsSystemFullPower")}
             />
+            <Radio.Group
+              onChange={(e) => updateInput(e.target.value, "measure")}
+              value={requestState.measure}
+            >
+              <Radio value={"W"}>Вт</Radio>
+              <Radio value={"VA"}>ВА</Radio>
+              {/* <Radio value={"kVA"}>кВА</Radio> */}
+            </Radio.Group>
+            {requestState.measure !== "W" && (
+              <>
+                <br />
+                <Text>выберите коэффициент мощности нагрузки</Text>
+                <Radio.Group
+                  onChange={(e) => updateInput(e.target.value, "pF")}
+                  value={requestState.pF}
+                >
+                  <Radio value={1}>1.0</Radio>
+                  <Radio value={0.9}>0.9</Radio>
+                  <Radio value={0.8}>0.8</Radio>
+                  <Radio value={0.7}>0.7</Radio>
+                  <Radio value={0.6}>0.6</Radio>
+                </Radio.Group>
+              </>
+            )}
             <br />
-            <label name="batteryRuntime">
-              {" "}
-              Задайте время работы от АКБ (мин){" "}
-            </label>
+            <Text name="batteryRuntime"> Задайте время работы от АКБ (мин) </Text>
             <InputNumber
               min={1}
               max={1200}
@@ -89,6 +126,8 @@ const UpsRequest = () => {
                 query: {
                   power: requestState.upsSystemFullPower,
                   time: requestState.batteryRuntime,
+                  measure: requestState.measure,
+                  pF: requestState.pF,
                 },
               }}
             >
