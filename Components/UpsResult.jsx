@@ -205,14 +205,13 @@ const UpsResult = () => {
             }
           }
           const price = configSource.reduce((sum, item) => (sum += item.summary), 0);
-          // const units =
           selectedData.push({
             key: configRow.config,
             config: configRow.config,
             configSource,
             time,
             price,
-            // units: 0,
+            units: configRow.units,
             href: configRow.href,
             powerReserve: Math.round(
               (1 - requestState.upsSystemFullPower / configRow.full_ups_power) * 100
@@ -287,9 +286,13 @@ const UpsResult = () => {
               {requestState.upsSystemFullPower} Вт, {requestState.batteryRuntime} мин
             </strong>
             , тип установки{" "}
-            <strong>{requestState.rackMount ? "стойка 19``" : "башня"}</strong>. Расчетное
-            время автономии <strong>{selectData[index].time} мин</strong> , резерв по
-            мощности <strong>{selectData[index].powerReserve}%</strong>
+            <strong>
+              {requestState.rackMount
+                ? "стойка 19`` (" + selectData[index].units + "U)"
+                : "башня"}
+            </strong>
+            . Расчетное время автономии <strong>{selectData[index].time} мин</strong> ,
+            резерв по мощности <strong>{selectData[index].powerReserve}%</strong>
           </Text>
           <Table
             dataSource={selectData[index].configSource}
