@@ -11,8 +11,8 @@ const { Paragraph, Text } = Typography;
 const UpsRequest = () => {
   console.log("UpsRequest");
   const [requestState, setRequestState] = useState({
-    upsSystemFullPower: 500,
-    batteryRuntime: 5,
+    upsSystemFullPower: 450,
+    batteryRuntime: 0,
     measure: "W",
     pF: 1,
   });
@@ -35,7 +35,7 @@ const UpsRequest = () => {
     if (name == "measure" && value !== "W") {
       setRequestState((state) => ({
         ...state,
-        pF: 0.7,
+        pF: 0.6,
       }));
     }
     if (name == "measure" && value === "W") {
@@ -105,8 +105,9 @@ const UpsRequest = () => {
             <br />
             <Text name="batteryRuntime"> Задайте время работы от АКБ (мин) </Text>
             <InputNumber
-              min={1}
+              min={0}
               max={1200}
+              // step={0.2}
               // defaultValue={5}
               value={requestState.batteryRuntime}
               onChange={(value) => updateInput(value, "batteryRuntime")}

@@ -66,6 +66,18 @@ const UpsResult = () => {
       ...requestState,
       [name]: value,
     });
+    if (name == "measure" && value !== "W") {
+      setRequestState((state) => ({
+        ...state,
+        pF: 0.6,
+      }));
+    }
+    if (name == "measure" && value === "W") {
+      setRequestState((state) => ({
+        ...state,
+        pF: 1,
+      }));
+    }
   };
 
   function calculateRunTime({ power, fullUpsPowerW, kx, px }) {
@@ -115,7 +127,10 @@ const UpsResult = () => {
           configRow.card_snmp_installed === "1" ||
           (requestState.snmpCard && configRow.card_snmp_option !== "no") ||
           (!requestState.snmpCard && configRow.card_snmp_installed === "0");
-        // console.log("snmpOk", snmpOk);
+        const powerOk =
+          requestState.upsSystemFullPower * requestState.pF <=
+            configRow.full_ups_power_w &&
+          requestState.upsSystemFullPower <= configRow.full_ups_power_va;
 
         if (
           time >= requestState.batteryRuntime &&
@@ -123,7 +138,8 @@ const UpsResult = () => {
           phaseOk &&
           outletOk &&
           rackOk &&
-          snmpOk
+          snmpOk &&
+          powerOk
         ) {
           console.log("configRow", configRow);
           const configSource = [
@@ -219,6 +235,7 @@ const UpsResult = () => {
       return selectedData;
       // setSelectData(selectedData);
     }
+
     setSelectData(getSelectTable());
   }, [requestState, sort, router.query, loading]);
 
@@ -358,9 +375,9 @@ const UpsResult = () => {
               <br />
               <Text name="batteryRuntime">Время работы от АКБ (мин) </Text>
               <InputNumber
-                min={1}
+                min={0}
                 max={1200}
-                // defaultValue={5}
+                // step={0.02}
                 value={requestState.batteryRuntime}
                 onChange={(value) => updateInput(value, "batteryRuntime")}
               />
