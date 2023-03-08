@@ -28,7 +28,7 @@ function getQueryVariable(query, variable) {
       return decodeURIComponent(pair[1]);
     }
   }
-  console.log("Query variable %s not found", variable);
+  // console.log("Query variable %s not found", variable);
 }
 
 const UpsResult = () => {
@@ -60,7 +60,7 @@ const UpsResult = () => {
   const [sort, setSort] = useState("price");
 
   const updateInput = (value, name) => {
-    console.log("updateInput - value, name", value, name);
+    // console.log("updateInput - value, name", value, name);
 
     setRequestState({
       ...requestState,
@@ -87,7 +87,7 @@ const UpsResult = () => {
     return power <= fullUpsPowerW ? time : 0;
   }
 
-  console.log("requestState 1", requestState, loading, router.query);
+  // console.log("requestState 1", requestState, loading, router.query);
 
   useEffect(() => {
     setLoading(false);
@@ -132,6 +132,7 @@ const UpsResult = () => {
             configRow.full_ups_power_w &&
           requestState.upsSystemFullPower <= configRow.full_ups_power_va;
 
+        // console.log("configRow", configRow.config, configRow);
         if (
           time >= requestState.batteryRuntime &&
           lastUps !== configRow.ups &&
@@ -141,7 +142,7 @@ const UpsResult = () => {
           snmpOk &&
           powerOk
         ) {
-          console.log("configRow", configRow);
+          // console.log("configRow", configRow);
           const configSource = [
             {
               partNumber: (
@@ -231,7 +232,7 @@ const UpsResult = () => {
       }
       // console.log("configRow-selectedData", selectedData);
       selectedData.sort((a, b) => a[sort] - b[sort]);
-      console.log("configRow-selectedData", selectedData);
+      // console.log("configRow-selectedData", selectedData);
       return selectedData;
       // setSelectData(selectedData);
     }
