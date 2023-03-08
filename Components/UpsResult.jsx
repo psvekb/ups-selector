@@ -15,6 +15,7 @@ import { strUSD } from "@/utils/appConsts";
 import { useRouter } from "next/router";
 import LoadingScreen from "./LoadingScreeen";
 import Head from "next/head";
+import { log } from "@/utils/helper";
 
 const { Text, Link } = Typography;
 
@@ -33,6 +34,7 @@ function getQueryVariable(query, variable) {
 
 const UpsResult = () => {
   // console.log("UpsResult");
+  log("UpsResult");
   const router = useRouter();
   // console.log("UpsResult,router", router, "router.query", router.query);
   // console.log("UpsResult,router-asPath", router.asPath);
