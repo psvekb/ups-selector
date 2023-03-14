@@ -5,11 +5,13 @@ import { ArrowRightOutlined, CalculatorOutlined } from "@ant-design/icons";
 import LoadingScreen from "./LoadingScreeen";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { log } from "@/utils/helper";
 
 const { Paragraph, Text } = Typography;
 
 const UpsRequest = () => {
-  console.log("UpsRequest");
+  log("UpsRequest");
+  // console.log("UpsRequest");
   const [requestState, setRequestState] = useState({
     upsSystemFullPower: 450,
     batteryRuntime: 0,
